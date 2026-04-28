@@ -8,6 +8,8 @@
 # Logan Preston
 # William Vitzum
 
+import parsing
+
 
 from typing import DefaultDict
 
@@ -42,6 +44,8 @@ def main():
 
     # Parse the file, create and populate a new NFA
     automata = NFA()
+    parsing.parse_machine(contents)
+
 
 if __name__ == "__main__":
     main()
