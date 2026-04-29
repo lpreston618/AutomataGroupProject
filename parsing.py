@@ -1,31 +1,36 @@
+#########################################
+# Theory of Automata Group Project      #
+#########################################
+# Kwasi Boamah
+# William Cassell
+# Raheema Kolleade
+# Eli Ports
+# Logan Preston
+# William Vitzum
+
 # Code for parsing the S-expression form of the machine files
 
-def parse_machine(m: str):
-    # strip newlines and commas for simpler parsing
-    print(m)
-    m = m.replace("\n", "").replace(",", " ")
-    print(m)
-    idx = m.find('(') ; print(idx)
-    idx = m.find('(', idx+1) ; print(idx)
-    idx = m.find('(', idx+1) ; print(idx)
-    alpha_str = m[idx+1:m.find(')', idx)]
-    new_alphastr = ''.join(alpha_str.replace(",", "").split(" "))
-    print(new_alphastr)
-    idx = m.find('(', idx+1)
-    states = m[idx+1:m.find(")", idx)].split(" ")
-    states = [s for s in states if s] # filter empty strings from list
-    print(states)
-    idx = m.find(')', idx+1)
-    # idx = m.find(',', idx+1) # consume the comma before the next symbol
-    initial = m[idx+1:m.find("(", idx)].strip()
-    print(initial)
-    idx = m.find("(", idx+1)
-    final = m[idx+1:m.find(")", idx+1)]
-    print(final)
-    # Gonna have to do some looping for this part.
+import pyparsing as pp
 
+m_list = pp.Forward() # define a recursive element
 
+atom = pp.Word(pp.alphanums + "_") # Words can have letters, numbers, and underscores
 
+# A list can be just an atom, or can contain any number (including 0) of atoms and lists
+m_list <<= (atom | pp.Suppress("(") + pp.Group(pp.ZeroOrMore(m_list)) + pp.Suppress(")"))
 
-
-
+# Take in a string describing an NFA and return a nested list of strings.
+# Ex: (((1,0), (a, b), a, (b), ((a, 0, b)))), (110)) becomes the Python list
+# [
+#   [
+#       ['1','0'], ['a','b'], 'a', ['b'], [['a', '0', 'b']]
+#   ],
+#   [
+#       ['110']
+#   ]
+# ]
+# This is desirable because we can then simply extract all the data we need from
+# these lists.
+def parse(machine: str):
+    m = machine.replace(",", "") # commas are irrelevant for parsing
+    return m_list.parse_string(m)[0] # unwrap outermost list returned by pyparsing
