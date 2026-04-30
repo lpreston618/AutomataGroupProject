@@ -37,7 +37,17 @@ class NFA:
     def add_transition(self, state: str, symbol: str, next_state: str) -> None:
         self.delta[(state, symbol)].append(next_state)
     
-    # Perform a single step of computation. Return a boolean telling
+    # Checks an input string to determine if all its characters are in the given
+    # alphabet. Returns True if they are, and False otherwise.
+    def checkAlphabet(self, input: str) -> bool:
+        for c in input:
+            if c not in self.alphabet:
+                print(f"Unrecognized character '{c}'")
+                return False
+        return True
+
+    # Perform a single step of computation. Return a boolean indicating whether
+    # the NFA has accepted the string (True if accept, False otherwise)
     def compute_step(self) -> bool:
         if len(self.input) == 0:
             if self.current_state in self.accepting:
@@ -48,19 +58,19 @@ class NFA:
                 # add nothing to the queue.
                 return False
         else:
-            # We still have input to compute on.
-            if self.input[0] not in self.alphabet:
-                # TODO: maybe automatically reject here?
-                print(f"WARNING: {self.input[0]} not in the alphabet!")
             next_states = self.delta[(self.current_state, self.input[0])]
             for state in next_states:
                 # Add all possible next states to the queue to search later
                 self.state_queue.append((state, self.input[1:]))
             return False
-    
+
     # Run a full computation on a given input. Prints whether the string is
     # accepted or rejected.
     def compute(self, input: str) -> None:
+        # Check that the string contains only characters in the alphabet
+        if not self.checkAlphabet(input):
+            print("REJECT")
+            return
         self.state_queue.clear()
         self.state_queue.append((self.start, input))
         while len(self.state_queue) != 0:
